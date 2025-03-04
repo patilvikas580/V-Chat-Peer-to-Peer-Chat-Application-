@@ -1,4 +1,4 @@
-# 📡 VChat - Peer-to-Peer Chat Application  
+# 📲📲 VChat - Peer-to-Peer Chat Application  
 
 VChat is a simple yet powerful Java-based peer-to-peer chat application that allows users to communicate over a network. It features a graphical user interface (GUI) built with Java Swing and supports basic messaging functionality.
 
