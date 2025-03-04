@@ -1,21 +1,22 @@
-# V-chat-peer-to-peer-chatting-application-using-Java
+# 📡 VChat - Peer-to-Peer Chat Application  
 
-## This is a simple peer-to-peer chat application implemented in Java. It allows two users on the same local area network to communicate with each other in real-time through text messages.
-### 1.Features
-- Real-time Communication: Users can send and receive messages instantly.
-- User-friendly GUI: The application provides a simple and intuitive graphical user interface.
-- Customizable Icons: Users can click on icons to open images or perform actions like initiating a video call.
-- Dynamic Display: The chat interface dynamically updates with new messages.
-Note: Some feature are under development and not functional. it'll be added soon as development completes
-### 2.How to Use
-#### Server Side:
-- Run the Server class to start the server.
-- Wait for a client to connect.
-#### Client Side:
-- Run the Client class to start the client.
-- Enter the IP address of the server (typically 127.0.0.1 if both are on the same machine).
-- Start chatting!
-## Screenshots
+VChat is a simple yet powerful Java-based peer-to-peer chat application that allows users to communicate over a network. It features a graphical user interface (GUI) built with Java Swing and supports basic messaging functionality.
+
+## ✨ Features  
+✅ Peer-to-peer messaging over a local network  
+✅ Multi-threaded handling for concurrent communication  
+✅ Java 8
+✅ Interactive and modern GUI using Java Swing & AWT  
+✅ Clickable profile picture and additional UI elements  
+✅ Key-based message sending (press **Enter** to send)  
+✅ Proper error handling and resource management  
+
+## 🖥️ Technologies Used  
+- **Programming Language:** Java (Socket Programming, Multithreading)  
+- **GUI Framework:** Swing & AWT  
+- **Networking:** TCP Sockets  
+
+## 📸 Screenshots  
 ### 1. Chatting Window 
 ![Server 1](https://github.com/patilvikas580/V-chat-peer-to-peer-chatting-application-using-Java/assets/84447249/24825a7e-5478-42c5-994a-d83060655854)
 ![Server 5](https://github.com/patilvikas580/V-chat-peer-to-peer-chatting-application-using-Java/assets/84447249/42d5b9ba-ca35-4be1-ae5a-0778287048d8)
@@ -29,24 +30,41 @@ Note: Some feature are under development and not functional. it'll be added soon
 ![Server 4](https://github.com/patilvikas580/V-chat-peer-to-peer-chatting-application-using-Java/assets/84447249/5fec6bac-bb03-46c9-aa9c-c9103d1b8a6d)
 ![Server7](https://github.com/patilvikas580/V-chat-peer-to-peer-chatting-application-using-Java/assets/84447249/2270c201-f91d-4e55-9b98-c3ad1952a45b)
 
-## Requirements
-- Java Development Kit (JDK)
-- Any Java IDE or text editor (Eclipse, IntelliJ IDEA, etc.)
 
-## Installation
-- Clone the repository to your local machine:
-git clone https://github.com/yourusername/chat-application.git
-- Open the project in your preferred Java IDE or text editor.
-- Compile and run the Server class on one machine and the Client class on another machine connected to the same local area network.
+## 🚀 How to Run  
 
-## Dependencies
-- No external dependencies are required for this project.
+### Prerequisites  
+Ensure you have **Java JDK 8+** installed on your system.  
 
-### Contribution
-- Contributions are welcome! Feel free to fork the repository and submit pull requests with any improvements or bug fixes.
+### Steps to Run the Application  
 
-## License
-- This project is licensed under the MIT License.
+1. **Clone the repository**  
+   ```bash
+   git clone https://github.com/patilvikas580/VChat.git
+   cd VChat
+   ```
+2. **Compile and Run the Server**  
+   Open a terminal in the project folder and run:  
+   ```bash
+   javac Server.java
+   java Server
+   ```
+3. **Compile and Run the Client**  
+   In another terminal window, run:  
+   ```bash
+   javac Client.java
+   java Client
+   ```
+4. Start chatting! 🎉  
+
+## 🛠️ Future Enhancements  
+🔹 File sharing (images, documents, etc.)  
+🔹 End-to-end encryption for secure messaging 🔐  
+🔹 Emojis and multimedia support  
+🔹 Improved UI with dark mode  
+
+## 🏆 Credits  
+Developed by **Vikas Sanjay Patil**  
 
 
 
