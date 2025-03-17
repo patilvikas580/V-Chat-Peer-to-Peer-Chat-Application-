@@ -35,18 +35,26 @@ VChat is a simple yet powerful Java-based peer-to-peer chat application that all
 - **I/O**: Streams (`BufferedReader`, `DataOutputStream`, etc.).  
 
 ## 📸 Screenshots  
-### 1. Chatting Window 
+
+### 1. Server Option Pane
+![Server option pane](https://github.com/user-attachments/assets/430b579a-09cf-4405-a167-bde4b77568ed)
+
+### 2. Client Window to enter server details
+![Client](https://github.com/user-attachments/assets/90b36ca2-cdc2-44a7-a21c-79dfcb653fd8)
+
+
+### 3. Chatting Window 
 ![Mohithii](https://github.com/user-attachments/assets/59cea729-d567-4505-bbec-f8483e14649c)
 ![VikasHii](https://github.com/user-attachments/assets/2aced9f2-a422-4453-bb9b-4a1752a7647b)
 
-### 2. Status Bar
+### 4. Status Bar
 ![Server 2](https://github.com/patilvikas580/V-chat-peer-to-peer-chatting-application-using-Java/assets/84447249/37a622e7-a50c-4872-aec1-edb2a1fbc7fe)
 ![Server 8](https://github.com/patilvikas580/V-chat-peer-to-peer-chatting-application-using-Java/assets/84447249/f04d226a-e7f1-4221-9cc0-bcce0d771902)
 
-### 3. Sending Files
+### 5. Sending Files
 ![Mohit Doc](https://github.com/user-attachments/assets/dd5c4df6-c070-4bf6-b39b-619613b265c6)
 
-### 3.Opening Profile in new window when click on it
+### 6.Opening Profile in new window when click on it
 ![Server 3](https://github.com/patilvikas580/V-chat-peer-to-peer-chatting-application-using-Java/assets/84447249/9a433ab0-ce58-4182-be82-e5b8f3ba8306)
 ![Server 6](https://github.com/patilvikas580/V-chat-peer-to-peer-chatting-application-using-Java/assets/84447249/a2024bc2-375a-47e7-b6f7-45a697081fe8)
 ### Opening Info window when we click on it(as of now it is just a picture will be updating soon with elements)
