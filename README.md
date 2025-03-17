@@ -100,10 +100,7 @@ Fork it, tweak it, send a PR—I’d love some collab! 😊
 Vikas Patil—just a dude into secure chats. Made with ❤️.
 
 Try Vchat out! Let me know if it glitches—I’ll sort it! 🎉
-## 🖥️ Technologies Used  
-- **Programming Language:** Java (Socket Programming, Multithreading)  
-- **GUI Framework:** Swing & AWT  
-- **Networking:** TCP Sockets  
+
 
 
 
