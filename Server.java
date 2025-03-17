@@ -1,15 +1,33 @@
 import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.*;
+import java.security.SecureRandom;
+import java.util.Base64;
 import java.awt.*;
+
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 import javax.swing.ImageIcon;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -21,37 +39,67 @@ class Server extends JFrame implements ActionListener{
     Socket socket;
     BufferedReader br;
     PrintWriter out;
+    private static SecretKey secretKey;
+    private static byte[] ivBytes;
+
+    private DataOutputStream dataOut;
+    private DataInputStream dataIn;
 
     private JLabel heading =new JLabel("Vikas");
     private JTextArea messageArea=new JTextArea();
     private JTextField messageInput=new JTextField();
     private Font font=new Font("SAN_SERIf",Font.PLAIN,20);
     String contenttosend;
+    public String publicIP;
 
     public Server()
     {
+        
         try 
         {
-            
+            URL url = new URL("https://checkip.amazonaws.com/"); // External service to get public IP
+            BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
+            publicIP = reader.readLine();
+            System.out.println("Public IP Address: " + publicIP);
+            showIP();
+        } 
+        catch (IOException e) 
+        {
+            e.printStackTrace();
+        }
+        
+        try 
+        {
+            KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+            keyGenerator.init(128);
+            secretKey = keyGenerator.generateKey();
+
+            ivBytes = new byte[16];
+            new SecureRandom().nextBytes(ivBytes);
             server= new ServerSocket(7777);
             System.out.println("Server is ready to conect");
             System.out.println("Waiting....");
 
             socket=server.accept();
 
+            ObjectOutputStream keyOut = new ObjectOutputStream(socket.getOutputStream());
+            keyOut.writeObject(secretKey);
+            keyOut.writeObject(ivBytes);
+            keyOut.flush();
+
             br=new BufferedReader(new InputStreamReader(socket.getInputStream()));//obtaining stream from socket
 
             out=new PrintWriter(socket.getOutputStream());//writing stream to socket
 
-            startReading(); 
+            //Sending files
 
-            // startWriting();
-
+            dataOut=new DataOutputStream(socket.getOutputStream());
+            dataIn=new DataInputStream(socket.getInputStream());
 
             createGUI();
             handleEvents();
-            
-
+            startReading(); 
+            startWriting();
         } 
         catch (Exception e) 
         {
@@ -62,7 +110,12 @@ class Server extends JFrame implements ActionListener{
         
         
     }
-
+        public void showIP()
+        {
+            JLabel ipLabel = new JLabel("Share this IP with client:"+publicIP);
+            JOptionPane.showMessageDialog(null,ipLabel);
+            
+        }
         public void createGUI()
         {
             setLayout(null);
@@ -91,7 +144,7 @@ class Server extends JFrame implements ActionListener{
                 }
             });
 
-            ImageIcon v=new ImageIcon(ClassLoader.getSystemResource("imgs/v.png"));
+            ImageIcon v=new ImageIcon(ClassLoader.getSystemResource("imgs/V.png"));
             Image vi=v.getImage().getScaledInstance(45,45,Image.SCALE_DEFAULT);
             ImageIcon vcall=new ImageIcon(vi);
             JLabel videocall=new JLabel(vcall);
@@ -135,8 +188,6 @@ class Server extends JFrame implements ActionListener{
             name.setBounds(70, 15, 150, 18);   
             p.add(name);
 
-           
-
             JLabel name2= new JLabel("Active now.");
             name2.setLayout(null);
             name2.setFont(new Font("Times New Roman", Font.PLAIN, 14));
@@ -154,11 +205,19 @@ class Server extends JFrame implements ActionListener{
                 public void mouseClicked(MouseEvent ae){
                     if(!socket.isClosed())
                     {
-                        contenttosend=messageInput.getText();
-                        messageArea.append("Me :"+contenttosend+"\n");
-                        out.println(contenttosend);
-                        out.flush();
-                        messageInput.setText("");
+                        try 
+                        {
+                            contenttosend=messageInput.getText();
+                            messageArea.append("Me :"+contenttosend+"\n");
+                            messageArea.setCaretPosition(messageArea.getDocument().getLength());
+                            String encryptedMsg = encrypt(contenttosend, secretKey, ivBytes);
+                            out.println(encryptedMsg);
+                            out.flush();
+                            messageInput.setText("");
+                        } catch (Exception e) {
+                            
+                            e.printStackTrace();
+                        }
                         
                     }
                 }
@@ -173,7 +232,7 @@ class Server extends JFrame implements ActionListener{
 
             im1.addMouseListener(new MouseAdapter() {
                 public void mouseClicked(MouseEvent ae){
-
+                    sendFile();
                 }
             });
 
@@ -193,32 +252,76 @@ class Server extends JFrame implements ActionListener{
            messageArea.setFont(font);
            messageInput.setFont(font);
 
-           messageArea.setLayout(null);
-           messageArea.setBounds(0, 75, 460, 500);
-           messageArea.setEditable(false);
-           add(messageArea);
+           messageArea.setLineWrap(true);
+           messageArea.setWrapStyleWord(true);
 
-           messageInput.setLayout(null);
-           messageInput.setBounds(5, 600, 281, 50);
-           add(messageInput);
+            JScrollPane scrollPane = new JScrollPane(messageArea);
+            scrollPane.setBounds(0, 75, 460, 500);
+            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+            scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            messageArea.setEditable(false);
+            add(scrollPane); 
 
-            setSize(460,700);
-            setLocation(400,50);
+            messageInput.setBounds(5, 600, 281, 50);
+            add(messageInput);
+
+            setResizable(false);
+            setSize(460, 700);
+            setLocation(400, 50);
             this.setTitle("Vchat");
             ImageIcon icon = new ImageIcon("imgs/vch.jpg");
             this.setIconImage(icon.getImage());
             this.setVisible(true);
+            
 
         }
 
+        private void sendFile()
+        {
+            JFileChooser fileChooser=new JFileChooser();
+            fileChooser.setFileFilter(new FileNameExtensionFilter("Images & Videos", "jpg","png","mp4","mp3"));
+            int result=fileChooser.showOpenDialog(this);
+            if(result==JFileChooser.APPROVE_OPTION)
+            {
+                File file=fileChooser.getSelectedFile();
+                try {
+                    //send file indicator and metadata
+                    out.println("FILE");
+                    out.flush();
+                    out.println(file.getName());
+                    out.flush();
+                    out.println(file.length());
+                    out.flush();
+
+                    //send raw file bytes
+
+                    FileInputStream fis=new FileInputStream(file);
+                    byte[] buffer =new byte[4096];
+                    int bytesRead;
+                    while ((bytesRead = fis.read(buffer)) != -1) {
+                        dataOut.write(buffer, 0, bytesRead);
+                    }
+                    dataOut.flush();
+                    fis.close();
+                    messageArea.append("Me: Sent file " + file.getName() + "\n");
+                    messageArea.setCaretPosition(messageArea.getDocument().getLength());
+
+                } catch (Exception e) {
+                    // TODO: handle exception
+                    e.printStackTrace();
+                    messageArea.append(e.getMessage());
+                    messageArea.setCaretPosition(messageArea.getDocument().getLength());
+                }
+            }
+        }
 
 
         public void dp()
         {
             JFrame frame = new JFrame("New Window");
             
-    
-    
+            
+            
             JPanel p=new JPanel();
             p.setBounds(0,0,460,700);
             
@@ -238,6 +341,7 @@ class Server extends JFrame implements ActionListener{
             frame.add(previous);
             p.add(image);
             frame.add(p);
+            frame.setResizable(false);
             previous.addMouseListener(new MouseAdapter() {
                 public void mouseClicked(MouseEvent ae){
                     frame.dispose();
@@ -273,7 +377,7 @@ class Server extends JFrame implements ActionListener{
                 // System.out.println("key released"+e.getKeyCode());
                 if(e.getKeyCode()==10)
                 {
-                    // System.out.println("you have pressed enter button");
+               
 
                     try{
                     
@@ -282,7 +386,9 @@ class Server extends JFrame implements ActionListener{
                         // String contenttosend=messageInput.getText();
                         contenttosend=messageInput.getText();
                         messageArea.append("Me :"+contenttosend+"\n");
-                        out.println(contenttosend);
+                        messageArea.setCaretPosition(messageArea.getDocument().getLength());
+                        String encryptedMsg = encrypt(contenttosend, secretKey, ivBytes);
+                        out.println(encryptedMsg);
                         out.flush();
                         messageInput.setText("");
                     
@@ -295,6 +401,7 @@ class Server extends JFrame implements ActionListener{
                     } catch(Exception ee)
                     {
                         messageArea.append(ee.getMessage());
+                        messageArea.setCaretPosition(messageArea.getDocument().getLength());
                     }
                 }
             }
@@ -315,14 +422,30 @@ class Server extends JFrame implements ActionListener{
                     while (true) 
                     {
                     
-                        String msg=br.readLine();  
-                        if(msg.equals("exit"))
+                        String msg=br.readLine();
+                        if (msg != null) 
                         {
-                            System.out.println("Mohit terminated the chat");
-                            socket.close();
-                            break;
+                            if (msg.equals("FILE")) {
+                                receiveFile();
+                            }
+                            
+                            else 
+                            {    
+                                String decryptedMessage = decrypt(msg, secretKey,ivBytes);
+                                if(decryptedMessage.equals("exit"))
+                                {
+                                    System.out.println("Mohit terminated the chat");
+                                    socket.close();
+                                    break;
+                                }
+                                else 
+                                {
+                                    messageArea.append("Mohit:"+decryptedMessage+"\n");
+                                    messageArea.setCaretPosition(messageArea.getDocument().getLength());
+                                } 
+                            }    
+                           
                         }  
-                        messageArea.append("Mohit:"+msg+"\n");
                     } 
                     
                     
@@ -347,13 +470,24 @@ class Server extends JFrame implements ActionListener{
                     
                         BufferedReader br1=new BufferedReader(new InputStreamReader(System.in));
                         String content=br1.readLine();
-                        out.println(content);
-                        out.flush();
-                        if(content.equals("exit"))
-                        {
-                            socket.close();
-                            break;
+                        if (content.equals("FILE")) {
+                            out.println(content);
                         }
+                        else
+                        {
+                            String ENCRYPT_msg=encrypt(content, secretKey,ivBytes);
+                            out.println(ENCRYPT_msg);
+                            out.flush();
+                            if(content.equals("exit"))
+                            {   
+                                messageArea.append("Vikas terminated chat");
+                                messageArea.setCaretPosition(messageArea.getDocument().getLength());
+                                messageInput.setEditable(false);
+                                socket.close();
+                                break;
+                            }
+                        }
+                        
                     } 
                        
                 }
@@ -366,13 +500,62 @@ class Server extends JFrame implements ActionListener{
         }    
 
 
+        private void receiveFile() throws IOException 
+        {
+            String fileName = br.readLine();
+            long fileSize = Long.parseLong(br.readLine());
+            File file = new File("received_" + fileName);
+            FileOutputStream fos = new FileOutputStream(file);
+            byte[] buffer = new byte[4096];
+            long bytesReceived = 0;
+            int bytesRead;
+            while (bytesReceived < fileSize && (bytesRead = dataIn.read(buffer, 0, (int) Math.min(buffer.length, fileSize - bytesReceived))) != -1) 
+            {
+                fos.write(buffer, 0, bytesRead);
+                bytesReceived += bytesRead;
+            }
+            fos.close();
+            messageArea.append("Mohit: Received file " + fileName + " (saved as " + file.getName() + ")\n");
+            messageArea.setCaretPosition(messageArea.getDocument().getLength());
+            if (fileName.endsWith(".jpg") || fileName.endsWith(".png")) 
+            {
+                displayImage(file);
+            }
+            else if (fileName.endsWith(".mp3")) {
+                messageArea.append("Received an audio file. You can play it from: " + file.getAbsolutePath() + "\n");
+                messageArea.setCaretPosition(messageArea.getDocument().getLength());
+            }   
+        }
+
+        private void displayImage(File file) 
+        {
+            JFrame imageFrame = new JFrame("Received Image: " + file.getName());
+            ImageIcon icon = new ImageIcon(file.getPath());
+            JLabel imageLabel = new JLabel(icon);
+            imageFrame.add(imageLabel);
+            imageFrame.pack();
+            imageFrame.setLocationRelativeTo(this);
+            imageFrame.setVisible(true);
+        }
+
+    
+   
+        private static String encrypt(String data, SecretKey key, byte[] iv) throws Exception {
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
+            byte[] encryptedBytes = cipher.doFinal(data.getBytes());
+            return Base64.getEncoder().encodeToString(encryptedBytes);
+        }
+    
+        private static String decrypt(String data, SecretKey key, byte[] iv) throws Exception {
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(iv));
+            byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(data));
+            return new String(decryptedBytes);
+        }
     public static void main(String[] args) {
         System.out.println("This is Vikas");
-
-
         new Server();
-
-
     }
 
     @Override
